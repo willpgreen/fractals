@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<head>
+    <title>Fractals</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<html>
+    <body>
+        <h1>The Mandelbrot Set</h1>
+
+        <div id="container"></div>
+
+        <div id="button-container">
+            <button id="right-button">
+                <i class="arrow right"></i>
+            </button>
+            <button id="left-button">
+                <i class="arrow left"></i>
+            </button>
+            <button id="up-button">
+                <i class="arrow up"></i>
+            </button>
+            <button id="down-button">
+                <i class="arrow down"></i>
+            </button>
+            <button id="zoom-in" class="zoom">+</button>
+            <button id="zoom-out" class="zoom">-</button>
+        </div>
+
+        <span id="description">
+            One way of defining the Mandelbrot set is by looking at how complex functions behave under repeated iteration. Here, “complex functions” are not necessarily terribly complicated; they’re functions that are defined on the complex numbers, numbers that have the form a+bi where a and b are garden-variety real numbers and i is √-1. 
+            The functions in question have the form f(z)=z<sup>2</sup>+c, where c is a complex number. For each c, we seed the function by plugging in 0 as the initial value for z. Then we take whatever we get out and plug it back into the function. As we iterate the function, one of two things can happen: either the iterates get larger and larger in general, moving further and further away from 0, or they stay close, possibly bouncing around the area wildly but never getting very far from 0. 
+            The values of c for which these iterates stay close to 0, colored black in the picture to the side, make up the Mandelbrot set. The other points are colored based on how quickly their iterates run away to infinity.
+            Aside from its inherent beauty, the Mandelbrot set has a few mathematically fascinating properties. Its complicated structure demonstrates what mathematicians mean by chaos: points very close to each other can have dramatically different behavior, and around the edges of the set, it’s basically impossible to predict whether a point is going to go one way or another. It also has surprising and interesting connections to other fractals called Julia sets.
+
+            <a href="https://blogs.scientificamerican.com/roots-of-unity/a-few-of-my-favorite-spaces-the-mandelbrot-set/">Source</a>
+        </span>
+
+        <img id="formula" src="./madelbrotformula.png">
+
+        
+        <script>
+            function createFractal(e) {
+                console.log('food');
+                //clear old canvas 
+                // while (container.hasChildNodes()) {
+                //     container.removeChild(container.firstChild);
+                // }
+
+                ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+
+                // // create canvas
+                // let myCanvas = document.createElement('canvas');
+                // myCanvas.width = 600;
+                // myCanvas.height = 600;
+                // myCanvas.style = "position:absolute; left: 50%; width: 600px; margin-left: -300px;"; // center canvas
+                // myCanvas.style.border = "1px solid black";
+                // document.body.appendChild(myCanvas);
+                // let ctx = myCanvas.getContext('2d');
+
+                // start drawing
+                function checkIfBelongsToMandelbrotSet(x, y) {
+                    let realComponent = x;
+                    let imaginaryComponent = y;
+                    let maxIterations = 300;
+
+                    for (let i = 0; i < maxIterations; i++) {
+                        let tempRealComponent = realComponent * realComponent - imaginaryComponent * imaginaryComponent + x;
+                        let tempImaginaryComponent = 2 * realComponent * imaginaryComponent + y;
+
+                        realComponent = tempRealComponent;
+                        imaginaryComponent = tempImaginaryComponent;
+
+                        if (realComponent * imaginaryComponent > 2) 
+                            return (i / maxIterations * 100); // return number as a percent
+                    }
+
+                    return 0;
+                }
+
+
+                for (let x = 0; x < myCanvas.width; x++) {
+                    for (let y = 0; y < myCanvas.height; y++) {
+                        let belongsToSet = checkIfBelongsToMandelbrotSet(x/magnificationFactor - panX, y/magnificationFactor - panY);
+
+                        if (belongsToSet === 0) {
+                            ctx.fillStyle = '#000';
+                            ctx.fillRect(x, y, 1, 1,); //draw a black pixel
+                        } else {
+                            ctx.fillStyle = 'hsl(260, 100%, ' + belongsToSet + '%)';
+                            ctx.fillRect(x,y, 1,1); // Draw a colorful pixel
+                        }
+                    }
+                }
+            };
+
+            const container = document.getElementById('container');
+            const upButton = document.getElementById('up-button');
+            const downButton = document.getElementById('down-button');
+            const rightButton = document.getElementById('right-button');
+            const leftButton = document.getElementById('left-button');
+            const zoomIn = document.getElementById('zoom-in');
+            const zoomOut = document.getElementById('zoom-out');
+
+
+            // create canvas
+            let myCanvas = document.createElement('canvas');
+            myCanvas.width = 600;
+            myCanvas.height = 600;
+            // myCanvas.style = "position:absolute; left: 50%; width: 600px; margin-left: -300px;"; // center canvas
+            myCanvas.style.border = "1px solid black";
+            container.appendChild(myCanvas);
+            let ctx = myCanvas.getContext('2d');
+
+            let magnificationFactor = 200;
+            let panX = 1.8;
+            let panY = 1.5;
+
+            createFractal();
+
+            // Add button functionality
+            upButton.addEventListener('click', function() {
+                panY += 50 / magnificationFactor;
+                createFractal();
+            });
+
+            downButton.addEventListener('click', function() {
+                panY -= 50 / magnificationFactor;
+                createFractal();
+            });
+
+            rightButton.addEventListener('click', function() {
+                panX -= 50 / magnificationFactor;
+                createFractal();
+            });
+
+            leftButton.addEventListener('click', function() {
+                panX += 50 / magnificationFactor;
+                createFractal();
+            });
+
+            zoomIn.addEventListener('click', function() {
+                if (magnificationFactor < 5000) {
+                    magnificationFactor *= 1.1;
+                }
+                createFractal();
+            });
+
+            zoomOut.addEventListener('click', function() {
+                magnificationFactor /= 1.5;
+                createFractal();
+            });
+
+
+            // add keyboard functionality
+            window.addEventListener('keydown', function(e){
+                switch(e.keyCode) {
+                    case 32: // space key increases magnification factor
+                        if (magnificationFactor < 5000) {
+                            magnificationFactor *= 1.1;
+                        }
+                        break;    
+                    case 39: // arrow right should pan image to the right
+                        panX -= 50 / magnificationFactor;
+                        break;
+                    case 37: // arrow left should pan image to the left
+                        panX += 50 / magnificationFactor;
+                        break;
+                    case 38: // arrow up should move image up
+                        panY += 50 / magnificationFactor;
+                        break;
+                    case 40: // arrow down should move image down
+                        panY -= 50 / magnificationFactor;
+                        break;
+                    case 13:
+                        magnificationFactor /= 1.5;
+                }
+
+                createFractal(); 
+                
+            });            
+        </script>
+    </body>
+</html>
