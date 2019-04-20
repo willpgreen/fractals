@@ -1,0 +1,2 @@
+# fractals
+An interactive visualization of the Mandelbrot set written with HTML and JavaScript - this project uses JavaScript and the HTML canvas element to draw the Mandelbrot set and allow the user to zoom in and out. The crux of this program is a function that determines whether or not a number is in the set. This is done with a for loop to estimate whether a complex number diverges and returns how many iterations through the loop it takes for the number to diverge. This value is used to color the pixel that represents that number on the canvas.
